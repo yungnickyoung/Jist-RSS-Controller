@@ -1,0 +1,12 @@
+{
+	"feeds": [
+		{
+			"domain": "cnn",
+			"link":	"http://rss.cnn.com/rss/cnn_topstories.rss"
+		},
+		{
+			"domain": "gizmodo",
+			"link": "https://gizmodo.com/rss"
+		}
+	]
+}
