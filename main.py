@@ -7,18 +7,49 @@ def loadJson():
 	with open('feeds.json') as f:
 		data = json.load(f)
 
-	return data["feeds"]
+	return data["top_stories"]
 
 def parseFeed(feed):
-	resp = requests.get(feed['link'])
+	print('--------------------------------%s---------------------------------' %(feed['domain']))
 
-	tree = ET.fromstring(resp.text)
+	curAttempts = 0
+	maxAttempts = 20
+	while True:
+		try:
+			resp = requests.get(feed['rss_url'])
+			break
+		except requests.exceptions.ConnectionError as err: # Connection refused --> abort
+			print('############################ CONNECTION ERROR #############################') # The current link for foxnews appears to be down
+			print(err)
+			return
+		except requests.exceptions.ContentDecodingError as err:
+			if curAttempts > maxAttempts:
+				print('############################ DECODING ERROR #############################') # huffingtonpost will sometimes throw this error
+				print(err)
+				return
+
+			curAttempts += 1
+			continue
+
+	curAttempts = 0
+	while True:
+		try:
+			tree = ET.fromstring(resp.text)
+			break
+		except ET.ParseError as err:
+			if curAttempts > maxAttempts:
+				print('############################ PARSING ERROR #############################') # huffingtonpost will sometimes throw this error
+				print(err)
+				return
+
+			curAttempts += 1
+			continue
 	
 	articles = []
 	for item in tree.findall('./channel/item'):
 		ad = False
 		for child in item:
-			if(child.tag == 'link'):
+			if(child.tag == 'rss_url'):
 				link = child.text
 				if(feed['domain'] not in child.text):
 					ad = True
@@ -30,7 +61,7 @@ def parseFeed(feed):
 				title = child.text
 
 		print(title)
-		print('\n')
+		#print('\n')
 
 def main():
 	feeds = loadJson()

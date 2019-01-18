@@ -1,12 +1,68 @@
 {
-	"feeds": [
+	"top_stories": [
 		{
 			"domain": "cnn",
-			"link":	"http://rss.cnn.com/rss/cnn_topstories.rss"
+			"rss_url": "http://rss.cnn.com/rss/cnn_topstories.rss"
+		},
+		{
+			"domain": "nytimes",
+			"rss_url": "http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+		},
+		{
+			"domain": "huffingtonpost",
+			"rss_url": "https://www.huffingtonpost.com/section/front-page/feed"
+		},
+		{
+			"domain": "foxnews",
+			"rss_url": "https://feeds.foxnews.com/foxnews/most-popular"
+		},
+		{
+			"domain": "usatoday",
+			"rss_url": "http://rssfeeds.usatoday.com/usatoday-newstopstories&x=1"
+		},
+		{
+			"domain": "reuters",
+			"rss_url": "http://feeds.reuters.com/reuters/topNews"
+		},
+		{
+			"domain": "politico",
+			"rss_url": "https://www.politico.com/rss/politicopicks.xml"
+		},
+		{
+			"domain": "yahoo",
+			"rss_url": "https://yahoo.com/news/rss"
+		},
+		{
+			"domain": "npr",
+			"rss_url": "https://www.npr.org/rss/rss.php"
+		},
+		{
+			"domain": "nbcnews",
+			"rss_url": "http://feeds.nbcnews.com/nbcnews/public/news"
+		},
+		{
+			"domain": "dailymail",
+			"rss_url": "https://www.dailymail.co.uk/news/index.rss"
+		},
+		{
+			"domain": "theguardian",
+			"rss_url": "https://www.theguardian.com/world/rss"
+		},
+		{
+			"domain": "abcnews",
+			"rss_url": "https://abcnews.go.com/abcnews/topstories"
+		},
+		{
+			"domain": "bbc",
+			"rss_url": "http://feeds.bbci.co.uk/news/rss.xml"
+		},
+		{
+			"domain": "latimes",
+			"rss_url": "https://www.latimes.com/rss2.0.xml"
 		},
 		{
 			"domain": "gizmodo",
-			"link": "https://gizmodo.com/rss"
+			"rss_url": "https://gizmodo.com/rss"
 		}
 	]
 }
