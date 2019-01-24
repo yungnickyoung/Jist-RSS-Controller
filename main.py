@@ -2,6 +2,7 @@
 import json
 import requests
 import xml.etree.ElementTree as ET
+from amp import ampify_url
 
 def loadJson():
 	with open('feeds.json') as f:
@@ -67,6 +68,8 @@ def parseFeed(feed):
 
 def main():
 	feeds = loadJson()
+
+	print(ampify_url('https://www.cnn.com/2019/01/23/politics/donald-trump-nancy-pelosi-government-shutdown-congress/index.html'))
 
 	for feed in feeds:
 		parseFeed(feed)
