@@ -68,6 +68,9 @@ def main():
 
 	for feed in feeds:
 		parseFeed(feed)
+	payload = {'url': 'https://amp-cnn-com.cdn.ampproject.org/c/s/amp.cnn.com/cnn/2019/01/23/politics/donald-trump-nancy-pelosi-government-shutdown-congress/index.html', 'domain': 'cnn'}
+	requests.post(url = "http://jist-html-parser-container/parse", data = payload) 
+
 
 
 if __name__ == "__main__":
