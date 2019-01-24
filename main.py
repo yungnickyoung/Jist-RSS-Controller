@@ -4,13 +4,14 @@ import requests
 import xml.etree.ElementTree as ET
 
 def loadJson():
-	with open('feeds.json') as f:
+	with open('cnn.json') as f:
 		data = json.load(f)
 
 	return data["top_stories"]
 
 def parseFeed(feed):
-	print('--------------------------------%s---------------------------------' %(feed['domain']))
+	domain = feed['domain']
+	print('--------------------------------%s---------------------------------' %(domain))
 
 	curAttempts = 0
 	maxAttempts = 20
@@ -45,16 +46,26 @@ def parseFeed(feed):
 			curAttempts += 1
 			continue
 	
-	articles = []
+
+	articlePayload = []
 	for item in tree.findall('./channel/item'):
 		ad = False # We do not keep any items labeled as ads
 
 		for child in item:
 			if(child.tag == 'rss_url'):
 				link = child.text
-				if(feed['domain'] not in child.text):
+				if(domain not in child.text):
 					ad = True
 					break
+
+			if(child.tag == 'link'):
+				url = child.text
+				try:
+					r = requests.get(url)
+					url = r.url
+				except:
+					print("ERROR GETTING URL")
+					print(url)
 
 			if(child.tag == 'description'):
 				description = child.text
@@ -63,15 +74,26 @@ def parseFeed(feed):
 				title = child.text
 
 		if (ad == False):
-			print(title)
+			articlePayload.append({'domain': domain, 'title': title, 'description': description, 'url': url})
+
+	return articlePayload
 
 def main():
 	feeds = loadJson()
 
+	allFeeds = []
+
 	for feed in feeds:
-		parseFeed(feed)
-	payload = {'url': 'https://amp-cnn-com.cdn.ampproject.org/c/s/amp.cnn.com/cnn/2019/01/23/politics/donald-trump-nancy-pelosi-government-shutdown-congress/index.html', 'domain': 'cnn'}
-	requests.post(url = "http://jist-html-parser-container/parse", data = payload) 
+		allFeeds.append(parseFeed(feed))
+	
+	for feedList in allFeeds:
+		print("Processing: %s" %(feedList[0].get('domain')))
+		for article in feedList:
+			requests.post(url = "http://jist-html-parser-container/parse", data = article)
+
+	# TEST PAYLOAD
+	#payload = {'url': 'https://amp-cnn-com.cdn.ampproject.org/c/s/amp.cnn.com/cnn/2019/01/23/politics/donald-trump-nancy-pelosi-government-shutdown-congress/index.html', 'domain': 'cnn'}
+	#requests.post(url = "http://jist-html-parser-container/parse", data = payload) 
 
 
 
