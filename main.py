@@ -2,6 +2,7 @@
 import json
 import requests
 import xml.etree.ElementTree as ET
+from amp import ampify_url
 
 def loadJson():
 	with open('cnn.json') as f:
