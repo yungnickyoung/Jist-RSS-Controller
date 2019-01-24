@@ -47,12 +47,14 @@ def parseFeed(feed):
 	
 	articles = []
 	for item in tree.findall('./channel/item'):
-		ad = False
+		ad = False # We do not keep any items labeled as ads
+
 		for child in item:
 			if(child.tag == 'rss_url'):
 				link = child.text
 				if(feed['domain'] not in child.text):
 					ad = True
+					break
 
 			if(child.tag == 'description'):
 				description = child.text
@@ -60,8 +62,8 @@ def parseFeed(feed):
 			if(child.tag == 'title'):
 				title = child.text
 
-		print(title)
-		#print('\n')
+		if (ad == False):
+			print(title)
 
 def main():
 	feeds = loadJson()
