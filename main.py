@@ -61,7 +61,7 @@ def parseFeed(feed):
 		for child in item:
 			# Get item's article url
 			if(child.tag == 'link'):
-				article_url = child.text
+				article_url = child.text.strip()
 				try:
 					resp = requests.get(article_url)
 					article_url = resp.url
@@ -72,20 +72,37 @@ def parseFeed(feed):
 					break
 
 				# Check if this article is an ad
-				if( ("www." + domain not in article_url) and ("http://" + domain not in article_url) and (domain + ".com" not in article_url) and (domain + ".org" not in article_url) ):
+				if( ("www." + domain not in article_url) and ("http://" + domain not in article_url) and ("https://" + domain not in article_url) and (domain + ".com" not in article_url) and (domain + ".org" not in article_url) ):
 					ad = True
 					break
 
 			# Get article description
 			if(child.tag == 'description'):
 				description = child.text
+ 
+				# Sometimes there is no description provided (e.g. some articles for politico), so we must encase stripping in a try-except block
+				try:
+					description = description.strip()
+				except:
+					pass
 
 			# Get article title
 			if(child.tag == 'title'):
 				title = child.text
 
+				# Sometimes there is no title provided (e.g. some slideshow "articles" for nbcnews), so we must encase stripping in try-except
+				try:
+					title = title.strip()
+				except:
+					pass
+
+			# Get article publish date
+			if (child.tag == 'pubDate'):
+				pubDate = child.text.strip()
+
 		if (ad == False and error_encountered == False):
-			article_entry = { 'domain': domain, 'title': title, 'description': description, 'article_url': article_url, 'amp_url':'', 'summary':'' }
+			article_entry = { 'domain': domain, 'title': title, 'description': description, 'pubDate':pubDate, 'article_url': article_url, 'amp_url':'', 'summary':'' }
+			print (article_entry)
 			article_list.append(article_entry)
 
 	return article_list

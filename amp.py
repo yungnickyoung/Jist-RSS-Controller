@@ -22,7 +22,6 @@ def ampify_url_list(article_url_list):
     resp = requests.post('https://acceleratedmobilepageurl.googleapis.com/v1/ampUrls:batchGet', params=params, json=data)
 
     resp_json = resp.json()
-    # print (resp_json)
 
     # Check if quota reached
     try:
