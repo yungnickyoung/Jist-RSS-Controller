@@ -14,7 +14,7 @@
 		},
 		{
 			"domain": "foxnews",
-			"rss_url": "https://feeds.foxnews.com/foxnews/most-popular"
+			"rss_url": "http://feeds.foxnews.com/foxnews/most-popular"
 		},
 		{
 			"domain": "usatoday",

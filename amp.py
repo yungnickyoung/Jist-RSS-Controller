@@ -25,11 +25,12 @@ def ampify_url_list(article_url_list):
 
     # Check if quota reached
     try:
-        print ('ERROR: RESPONSE CODE ' + resp_json['error']['code'] + ': ' + resp_json['error']['message'])
+        print ('ERROR: RESPONSE CODE ' + str(resp_json['error']['code']) + ': ' + str(resp_json['error']['message']))
         raise Exception("Quota reached - wait a few seconds before attempting to access the API again.")
     except KeyError as ke:
         pass
 
+    # Fill the amp dict with the cdn AMP URLs
     amp_dict = {}
     invalid_urls = []
     try:
@@ -38,14 +39,15 @@ def ampify_url_list(article_url_list):
     except KeyError as ke:
         print ("No ampUrls in API response")
 
+    # Record errors returned for any URLS that are not valid for some reason
     try:
         for AmpUrlError in resp_json['urlErrors']:
             errorCode = AmpUrlError['errorCode']
             errorMessage = AmpUrlError['errorMessage']
             originalUrl = AmpUrlError['originalUrl']
 
-            print ('Encountered error "' + errorCode + ': ' + errorMessage)
-            print ('Skipping URL... ' + originalUrl)
+            print ('Encountered error "' + str(errorCode) + ': ' + str(errorMessage))
+            print ('Skipping URL... ' + str(originalUrl))
 
             invalid_urls.append(originalUrl)
 
@@ -54,6 +56,4 @@ def ampify_url_list(article_url_list):
     except KeyError as ke:
         print ("No urlErrors in API response")
     
-    # print ("amp dict:")
-    # print (amp_dict)
     return amp_dict

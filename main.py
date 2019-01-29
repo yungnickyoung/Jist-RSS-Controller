@@ -15,6 +15,7 @@ def parseFeed(feed):
 	domain = feed['domain']
 	print('--------------------------------%s---------------------------------' %(domain))
 
+	headers = { 'Accept-Encoding': 'gzip' }
 
 	# Retrieve the RSS page for the given feed.
 	# Max 20 attempts before printing an error and returning.
@@ -22,6 +23,7 @@ def parseFeed(feed):
 	MAX_ATTEMPTS = 20
 	while True:
 		try:
+			resp = None
 			resp = requests.get(feed['rss_url'])
 			break
 		except requests.exceptions.ConnectionError as err: # Connection refused --> abort
@@ -34,7 +36,11 @@ def parseFeed(feed):
 				print(err)
 				raise
 
+			if (resp and resp.status_code == requests.codes.too_many_requests):
+				time.sleep(10)
+
 			curAttempts += 1
+			time.sleep(2)
 			continue
 
 	# Parse the RSS file as XML.
@@ -48,6 +54,7 @@ def parseFeed(feed):
 			if curAttempts > MAX_ATTEMPTS:
 				print('############################ PARSING ERROR #############################') # huffingtonpost will sometimes throw this error
 				print(err)
+				time.sleep(2)
 				raise
 
 			curAttempts += 1
@@ -62,14 +69,28 @@ def parseFeed(feed):
 			# Get item's article url
 			if(child.tag == 'link'):
 				article_url = child.text.strip()
+				curAttempts = 0
 				try:
-					resp = requests.get(article_url)
+					resp = requests.get(article_url, headers=headers)
 					article_url = resp.url
 				except requests.exceptions.ConnectionError as err:
 					print("ERROR GETTING URL: " + article_url + " IN DOMAIN " + domain)
 					print (err)
 					error_encountered = True
 					break
+				except requests.exceptions.ContentDecodingError as err:
+					if curAttempts > MAX_ATTEMPTS:
+						print('############################ DECODING ERROR GETTING REDIR #############################') # huffingtonpost will sometimes throw this error
+						print(err)
+						error_encountered = True
+						break
+
+					if (resp and resp.status_code == requests.codes.too_many_requests):
+						time.sleep(10)
+
+					curAttempts += 1
+					time.sleep(2)
+					continue
 
 				# Check if this article is an ad
 				if( ("www." + domain not in article_url) and ("http://" + domain not in article_url) and ("https://" + domain not in article_url) and (domain + ".com" not in article_url) and (domain + ".org" not in article_url) ):
@@ -135,8 +156,8 @@ def main():
 			except Exception as e:
 				print (e)
 				# Wait some time before retrying
-				time.sleep(5)
-				print ("Waiting ...")
+				print ("Waiting 30 seconds...")
+				time.sleep(30)
 				continue
 			break
 
@@ -157,6 +178,7 @@ def main():
 				if (found_entry == True):
 					break
 
+	code_count = {}
 	for small_list in big_list:
 		for item in small_list:
 			# Skip items with empty AMP urls
@@ -168,6 +190,16 @@ def main():
 			resp = requests.post(url='http://jist-html-parser-container/parse', json=data)
 
 			print ('Response <' + str(resp.status_code) + '>')
+			print (item['title'] + ' - ' + item['domain'])
+
+			try:
+				code_count[resp.status_code] += 1
+			except:
+				code_count[resp.status_code] = 1
+
+			if resp.status_code != requests.codes.ok:
+				print ("NON-200 DETECTED")
+				# wait = input("Press Enter to continue...")
 
 			# Try to get summary
 			try:
@@ -178,8 +210,11 @@ def main():
 
 			item['summary'] = summary
 
-			print ('Article ' + item['title'] + ': ')
 			print (summary)
+
+
+
+	print(code_count)
 
 if __name__ == "__main__":
 	main()
