@@ -122,7 +122,7 @@ def parseFeed(feed):
 				pubDate = child.text.strip()
 
 		if (ad == False and error_encountered == False):
-			article_entry = { 'domain': domain, 'title': title, 'description': description, 'pubDate':pubDate, 'article_url': article_url, 'amp_url':'', 'summary':'' }
+			article_entry = { 'domain': domain, 'title': title, 'description': description, 'pub_date':pubDate, 'article_url': article_url, 'amp_url':'', 'summary':'' }
 			print (article_entry)
 			article_list.append(article_entry)
 
