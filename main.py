@@ -1,9 +1,25 @@
-
+import hashlib
 import json
 import requests
 import time
 import xml.etree.ElementTree as ET
 from amp import ampify_url_list
+from flask import Flask, request, jsonify
+import os
+
+app = Flask(__name__)
+
+# Tell RSS-Controller that a microservice is ready
+# When all microservices are ready, begin
+@app.route("/ready", methods = ['POST'])
+def serviceReady():
+	app.logger.info("Service responded: ready.")
+	app.CONNECTED_SERVICES += 1
+	if(app.CONNECTED_SERVICES >= app.MAX_SERVICES):
+		app.logger.info("All services ready, starting RSS feed engine:")
+		main()
+
+	return ('', 204)
 
 def loadJson():
 	with open('feeds.json') as f:
@@ -13,7 +29,7 @@ def loadJson():
 
 def parseFeed(feed):
 	domain = feed['domain']
-	print('--------------------------------%s---------------------------------' %(domain))
+	app.logger.info('--------------------------------%s---------------------------------' %(domain))
 
 	headers = { 'Accept-Encoding': 'gzip' }
 
@@ -27,13 +43,13 @@ def parseFeed(feed):
 			resp = requests.get(feed['rss_url'])
 			break
 		except requests.exceptions.ConnectionError as err: # Connection refused --> abort
-			print('############################ CONNECTION ERROR #############################') # The current link for foxnews appears to be down
-			print(err)
+			app.logger.info('############################ CONNECTION ERROR #############################') # The current link for foxnews appears to be down
+			app.logger.info(err)
 			raise
 		except requests.exceptions.ContentDecodingError as err:
 			if curAttempts > MAX_ATTEMPTS:
-				print('############################ DECODING ERROR #############################') # huffingtonpost will sometimes throw this error
-				print(err)
+				app.logger.info('############################ DECODING ERROR #############################') # huffingtonpost will sometimes throw this error
+				app.logger.info(err)
 				raise
 
 			if (resp and resp.status_code == requests.codes.too_many_requests):
@@ -52,8 +68,8 @@ def parseFeed(feed):
 			break
 		except ET.ParseError as err:
 			if curAttempts > MAX_ATTEMPTS:
-				print('############################ PARSING ERROR #############################') # huffingtonpost will sometimes throw this error
-				print(err)
+				app.logger.info('############################ PARSING ERROR #############################') # huffingtonpost will sometimes throw this error
+				app.logger.info(err)
 				time.sleep(2)
 				raise
 
@@ -69,19 +85,35 @@ def parseFeed(feed):
 			# Get item's article url
 			if(child.tag == 'link'):
 				article_url = child.text.strip()
+
+				# check the pre-redirect url to check database conflicts
+				url_hash = hashlib.md5(article_url.encode()).hexdigest()
+				hash_check = ""
+				try:
+					app.logger.info("Checking hash of " + article_url + " (" + url_hash + ")")
+					hash_check = requests.get(url="http://jist-database-api:5003/articleExists", json={'url_hash': url_hash})
+				except Exception as e:
+					app.logger.info("Error checking hash: " + str(e))
+				app.logger.info(hash_check.json()[0][0])
+
+				if(hash_check.json()[0][0] > 0):
+					app.logger.info("Hash: " + str(hash_check) + " exists, ignoring")
+					continue
+
+				# get post-redirect URL
 				curAttempts = 0
 				try:
 					resp = requests.get(article_url, headers=headers)
 					article_url = resp.url
 				except requests.exceptions.ConnectionError as err:
-					print("ERROR GETTING URL: " + article_url + " IN DOMAIN " + domain)
-					print (err)
+					app.logger.info("ERROR GETTING URL: " + article_url + " IN DOMAIN " + domain)
+					app.logger.info(err)
 					error_encountered = True
 					break
 				except requests.exceptions.ContentDecodingError as err:
 					if curAttempts > MAX_ATTEMPTS:
-						print('############################ DECODING ERROR GETTING REDIR #############################') # huffingtonpost will sometimes throw this error
-						print(err)
+						app.logger.info('############################ DECODING ERROR GETTING REDIR #############################') # huffingtonpost will sometimes throw this error
+						app.logger.info(err)
 						error_encountered = True
 						break
 
@@ -95,7 +127,7 @@ def parseFeed(feed):
 				# Check if this article is an ad
 				if( ("www." + domain not in article_url) and ("http://" + domain not in article_url) and ("https://" + domain not in article_url) and (domain + ".com" not in article_url) and (domain + ".org" not in article_url) ):
 					ad = True
-					break
+					continue
 
 			# Get article description
 			if(child.tag == 'description'):
@@ -119,11 +151,11 @@ def parseFeed(feed):
 
 			# Get article publish date
 			if (child.tag == 'pubDate'):
-				pubDate = child.text.strip()
+				pub_date = child.text.strip()
 
 		if (ad == False and error_encountered == False):
-			article_entry = { 'domain': domain, 'title': title, 'description': description, 'pubDate':pubDate, 'article_url': article_url, 'amp_url':'', 'summary':'' }
-			print (article_entry)
+			article_entry = { 'domain': domain, 'title': title, 'description': description, 'pub_date':pub_date, 'article_url': article_url, 'amp_url':'', 'summary':'', 'url_hash': url_hash }
+			#app.logger.info(article_entry)
 			article_list.append(article_entry)
 
 	return article_list
@@ -157,6 +189,7 @@ def main():
 				print (e)
 				# Wait some time before retrying
 				print ("Waiting 30 seconds...")
+				print(str(len(url_list) - i) + " articles left")
 				time.sleep(30)
 				continue
 			break
@@ -186,8 +219,10 @@ def main():
 				continue
 			
 			# Send POST for getting summary for article
-			data = { 'url':item['amp_url'], 'domain':item['domain'] }
-			resp = requests.post(url='http://jist-html-parser-container/parse', json=data)
+			# DEBUG:
+				# data = { 'url':item['amp_url'], 'domain':item['domain'] }
+			data = item
+			resp = requests.post(url='http://jist-html-parser-container:5001/parse', json=data)
 
 			print ('Response <' + str(resp.status_code) + '>')
 			print (item['title'] + ' - ' + item['domain'])
@@ -212,9 +247,17 @@ def main():
 
 			print (summary)
 
+			# Send to database
+			requests.post(url='http://jist-database-api:5003/postArticle', json = item)
 
 
-	print(code_count)
+
+	app.logger.info(code_count)
 
 if __name__ == "__main__":
-	main()
+	# Number of services to connect to RSS controller before starting
+	app.MAX_SERVICES = 1
+	app.CONNECTED_SERVICES = 0
+
+	app.run(debug=True, host='0.0.0.0', port=5000)
+	
