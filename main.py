@@ -1,4 +1,5 @@
 import hashlib
+import sys
 import json
 import requests
 import time
@@ -22,7 +23,7 @@ def serviceReady():
 	return ('', 204)
 
 def loadJson():
-	with open('feeds.json') as f:
+	with open(sys.argv[1]) as f:
 		data = json.load(f)
 
 	return data["top_stories"]
@@ -99,6 +100,8 @@ def parseFeed(feed):
 				if(hash_check.json()[0][0] > 0):
 					app.logger.info("Hash: " + str(hash_check) + " exists, ignoring")
 					continue
+				else:
+					app.logger.info("Hash doesn't exist, moving on.")
 
 				# get post-redirect URL
 				curAttempts = 0

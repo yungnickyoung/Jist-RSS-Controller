@@ -1,0 +1,8 @@
+{
+	"top_stories": [
+		{
+			"domain": "cnn",
+			"rss_url": "http://rss.cnn.com/rss/cnn_topstories.rss"
+		}
+	]
+}
