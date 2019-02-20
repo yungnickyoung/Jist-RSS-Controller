@@ -6,6 +6,7 @@ import time
 import xml.etree.ElementTree as ET
 from amp import ampify_url_list
 from flask import Flask, request, jsonify
+from threading import Thread
 import os
 
 app = Flask(__name__)
@@ -15,10 +16,11 @@ app = Flask(__name__)
 @app.route("/ready", methods = ['POST'])
 def serviceReady():
 	app.logger.info("Service responded: ready.")
-	app.CONNECTED_SERVICES += 1
+	app.CONNECTED_SERVICES += 2
 	if(app.CONNECTED_SERVICES >= app.MAX_SERVICES):
+		thr = Thread(target=main, args=[])
+		thr.start()
 		app.logger.info("All services ready, starting RSS feed engine:")
-		main()
 
 	return ('', 204)
 
@@ -95,7 +97,6 @@ def parseFeed(feed):
 					hash_check = requests.get(url="http://jist-database-api:5003/articleExists", json={'url_hash': url_hash})
 				except Exception as e:
 					app.logger.info("Error checking hash: " + str(e))
-				app.logger.info(hash_check.json()[0][0])
 
 				if(hash_check.json()[0][0] > 0):
 					app.logger.info("Hash: " + str(hash_check) + " exists, ignoring")
@@ -183,16 +184,17 @@ def main():
 			url_list.append(item['article_url'])
 
 	# Fetch AMP urls for every article
+	app.logger.info("Fetching AMP urls...")
 	amp_dict_list = []
 	for i in range (0, len(url_list), 50):
 		while True:
 			try:
 				amp_dict = ampify_url_list(url_list[i:i+50])
 			except Exception as e:
-				print (e)
+				app.logger.info (e)
 				# Wait some time before retrying
-				print ("Waiting 30 seconds...")
-				print(str(len(url_list) - i) + " articles left")
+				app.logger.info ("Waiting 30 seconds...")
+				app.logger.info(str(len(url_list) - i) + " articles left")
 				time.sleep(30)
 				continue
 			break
@@ -200,6 +202,7 @@ def main():
 		amp_dict_list.append(amp_dict)
 
 	# Update all entries with their amp urls
+	app.logger.info("Updating entries with amp urls...")
 	for amp_dict in amp_dict_list:
 		for key, value in amp_dict.items():
 			found_entry = False
@@ -222,13 +225,10 @@ def main():
 				continue
 			
 			# Send POST for getting summary for article
-			# DEBUG:
-				# data = { 'url':item['amp_url'], 'domain':item['domain'] }
-			data = item
-			resp = requests.post(url='http://jist-html-parser-container:5001/parse', json=data)
+			resp = requests.post(url='http://jist-html-parser:5001/parse', json=item)
 
-			print ('Response <' + str(resp.status_code) + '>')
-			print (item['title'] + ' - ' + item['domain'])
+			app.logger.info ('Response <' + str(resp.status_code) + '>')
+			app.logger.info (item['title'] + ' - ' + item['domain'])
 
 			try:
 				code_count[resp.status_code] += 1
@@ -236,7 +236,7 @@ def main():
 				code_count[resp.status_code] = 1
 
 			if resp.status_code != requests.codes.ok:
-				print ("NON-200 DETECTED")
+				app.logger.info ("NON-200 DETECTED")
 				# wait = input("Press Enter to continue...")
 
 			# Try to get summary
@@ -248,9 +248,10 @@ def main():
 
 			item['summary'] = summary
 
-			print (summary)
+			app.logger.info (summary)
 
 			# Send to database
+			app.logger.info('Storing in database')
 			requests.post(url='http://jist-database-api:5003/postArticle', json = item)
 
 
