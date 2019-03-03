@@ -7,4 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
 
-CMD [ "python", "./main.py", "feeds.json" ]
+ENTRYPOINT [ "python", "./main.py"]
+CMD ["feeds.json"]

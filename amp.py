@@ -1,4 +1,6 @@
 import requests
+import sys
+from bcolors import bcolors
 
 def ampify_url_list(article_url_list):
     """ Returns a mapping of input URLs to AMP Cache URLs
@@ -25,7 +27,7 @@ def ampify_url_list(article_url_list):
 
     # Check if quota reached
     try:
-        print ('ERROR: RESPONSE CODE ' + str(resp_json['error']['code']) + ': ' + str(resp_json['error']['message']))
+        print (bcolors.FAIL + 'ERROR: RESPONSE CODE ' + str(resp_json['error']['code']) + ': ' + str(resp_json['error']['message']) + bcolors.ENDC, file=sys.stderr)
         raise Exception("Quota reached - wait a few seconds before attempting to access the API again.")
     except KeyError as ke:
         pass
@@ -37,7 +39,7 @@ def ampify_url_list(article_url_list):
         for AmpUrl in resp_json['ampUrls']:
             amp_dict[AmpUrl['originalUrl']] = AmpUrl['cdnAmpUrl']
     except KeyError as ke:
-        print ("No ampUrls in API response")
+        print (bcolors.WARNING + "No ampUrls in API response" + bcolors.ENDC, file=sys.stderr)
 
     # Record errors returned for any URLS that are not valid for some reason
     try:
@@ -46,14 +48,14 @@ def ampify_url_list(article_url_list):
             errorMessage = AmpUrlError['errorMessage']
             originalUrl = AmpUrlError['originalUrl']
 
-            print ('Encountered error "' + str(errorCode) + ': ' + str(errorMessage))
-            print ('Skipping URL... ' + str(originalUrl))
+            print ('Encountered error "' + str(errorCode) + ': ' + str(errorMessage), file=sys.stderr)
+            print ('Skipping URL... ' + str(originalUrl), file=sys.stderr)
 
             invalid_urls.append(originalUrl)
 
-        print ("Skipped the following URLS: ")
-        print (invalid_urls)
+        print (bcolors.WARNING + "Skipped the following URLS: " + bcolors.ENDC, file=sys.stderr)
+        print (invalid_urls, file=sys.stderr)
     except KeyError as ke:
-        print ("No urlErrors in API response")
+        print (bcolors.GREEN + "No urlErrors in API response" + bcolors.ENDC, file=sys.stderr)
     
     return amp_dict
