@@ -4,6 +4,7 @@ import json
 import requests
 import time
 import re
+import tldextract
 import xml.etree.ElementTree as ET
 from amp import ampify_url_list
 from bcolors import bcolors
@@ -141,9 +142,21 @@ def parseFeed(feed):
                     time.sleep(2)
                     continue
 
-                # Check if this article is an ad
-                if( ("www." + domain not in articleUrl) and ("http://" + domain not in articleUrl) and ("https://" + domain not in articleUrl) and (domain + ".com" not in articleUrl) and (domain + ".org" not in articleUrl) ):
+                # Discard ads/articles not hosted on the domain
+                # if( ("www." + domain not in articleUrl) and ("http://" + domain not in articleUrl) and ("https://" + domain not in articleUrl) and (domain + ".com" not in articleUrl) and (domain + ".org" not in articleUrl) ):
+                ext = tldextract.extract(articleUrl)
+                print(bcolors.WARNING + "DETECTED DOMAIN: " + ext.domain + bcolors.ENDC, file=sys.stderr)
+                if ext.domain != domain:
                     ad = True
+                    continue
+
+                # Discard articles with "bad" paths
+                for path in feed['bad_paths']:
+                    if path in articleUrl:
+                        ad = True
+                        break
+
+                if ad == True:
                     continue
 
             # Get article description
@@ -251,15 +264,14 @@ def main():
                 if (found_entry == True):
                     break
 
+    print("waiting 20 sec...", file=sys.stderr)
+    time.sleep(20)
+
     htmlParseCodeCount = {}
     databaseCodeCount = {}
 
     for smallList in bigList:
         for item in smallList:
-            # Skip items with empty AMP urls
-            if item['amp_url'] == '':
-                continue
-            
             # Send POST for getting summary for article
             resp = requests.post(url='http://jist-html-parser:5001/parse', json=item)
 
@@ -268,7 +280,7 @@ def main():
             if resp.status_code == 200:
                 print(bcolors.BLUE + "    HTML Parser response: {}".format(resp.status_code) + bcolors.ENDC, file=sys.stderr)
             else:
-                print(bcolors.WARNING + "    HTML Parser response: {}".format(resp.status_code) + bcolors.ENDC, file=sys.stderr)
+                print(bcolors.WARNING + "    HTML Parser response: {0}: {1}".format(resp.status_code, resp.text) + bcolors.ENDC, file=sys.stderr)
 
             # Keep track of response code count for displaying at the end
             try:
@@ -276,18 +288,17 @@ def main():
             except:
                 htmlParseCodeCount[resp.status_code] = 1
 
-            # Try to get summary
+            # Get summary. Ignore/don't save articles which did not successfully return a summary from HTML Parser
             try:
                 summary = resp.json()['summary']
-            except json.decoder.JSONDecodeError as jde_error: # URL was probably invalid or weird
-                item['amp_url'] = '' # Mark the article as to be discarded and continue
+            except json.decoder.JSONDecodeError as jde_error:
+                print(bcolors.WARNING + "    Failed to get summary. Moving on to next item..." + bcolors.ENDC)
                 continue
 
             item['summary'] = summary
-
             print("    " + str(summary), file=sys.stderr)
 
-            # Send to database
+            # Save to database
             resp = requests.post(url='http://jist-database-api:5003/postArticle', json=item)
 
             if resp.status_code == 201:
@@ -305,6 +316,7 @@ def main():
             except:
                 databaseCodeCount[resp.status_code] = 1
 
+    print("\n")
     print(bcolors.GREEN + "HTML Parser responses: {}".format(str(htmlParseCodeCount)) + bcolors.ENDC, file=sys.stderr)
     print(bcolors.GREEN + "Database responses: {}".format(str(databaseCodeCount)) + bcolors.ENDC, file=sys.stderr)
     sys.stderr.flush()

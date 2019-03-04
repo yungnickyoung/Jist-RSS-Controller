@@ -1,3 +1,4 @@
 requests
 Flask
 beautifulsoup4
+tldextract
