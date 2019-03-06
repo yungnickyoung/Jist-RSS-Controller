@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "abcnews",
+			"rss_url": "https://abcnews.go.com/abcnews/topstories",
+			"bad_paths": ["/video/", "/Live/", "/wireStory/"]
+		}
+	]
+}

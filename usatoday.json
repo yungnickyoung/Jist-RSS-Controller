@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "usatoday",
+			"rss_url": "http://rssfeeds.usatoday.com/usatoday-newstopstories&x=1",
+			"bad_paths": ["picture-gallery"]
+		}
+	]
+}

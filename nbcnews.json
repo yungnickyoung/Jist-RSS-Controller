@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "nbcnews",
+			"rss_url": "http://feeds.nbcnews.com/nbcnews/public/news",
+			"bad_paths": []
+		}
+	]
+}

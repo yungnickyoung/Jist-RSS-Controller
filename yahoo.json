@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "yahoo",
+			"rss_url": "https://yahoo.com/news/rss",
+			"bad_paths": []
+		}
+	]
+}

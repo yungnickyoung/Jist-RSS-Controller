@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "bbc",
+			"rss_url": "http://feeds.bbci.co.uk/news/rss.xml",
+			"bad_paths": ["/av/"]
+		}
+	]
+}

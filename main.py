@@ -97,6 +97,22 @@ def parseFeed(feed):
         error_encountered = False # Only keep items which do not encounter errors during this process
 
         for child in item:
+            # Get article title
+            if(child.tag == 'title'):
+                title = child.text
+
+                # Title is required
+                if title is None:
+                    error_encountered = True
+                    break
+
+                # Sometimes there is no title provided (e.g. some slideshow "articles" for nbcnews), so we must encase stripping in try-except
+                # UPDATE: now that we check for titles first, strip() should never raise an exception
+                try:
+                    title = title.strip()
+                except:
+                    pass
+
             # Get item's article url
             if(child.tag == 'link'):
                 articleUrl = child.text.strip()
@@ -143,29 +159,42 @@ def parseFeed(feed):
                     continue
 
                 # Discard ads/articles not hosted on the domain
-                # if( ("www." + domain not in articleUrl) and ("http://" + domain not in articleUrl) and ("https://" + domain not in articleUrl) and (domain + ".com" not in articleUrl) and (domain + ".org" not in articleUrl) ):
                 ext = tldextract.extract(articleUrl)
-                print(bcolors.WARNING + "DETECTED DOMAIN: " + ext.domain + bcolors.ENDC, file=sys.stderr)
-                if ext.domain != domain:
+                if domain == "abcnews": # desired abcnews article URLS are of the format abcnews.go.com, so what we want to compare to is the subdomain in this case
+                    ext_domain = ext.subdomain
+                else:
+                    ext_domain = ext.domain
+
+                print(bcolors.WARNING + "DETECTED DOMAIN: " + ext_domain + bcolors.ENDC, file=sys.stderr)
+                sys.stderr.flush()
+                
+                if ext_domain != domain:
                     ad = True
-                    continue
+                    print(bcolors.WARNING + "DETECTED AD (Domain does not match) - Skipping article..." + bcolors.ENDC, file=sys.stderr)
+                    sys.stderr.flush()
+                    break
 
                 # Discard articles with "bad" paths
                 for path in feed['bad_paths']:
                     if path in articleUrl:
                         ad = True
+                        print(bcolors.WARNING + "DETECTED BAD PATH - Skipping article..." + bcolors.ENDC, file=sys.stderr)
                         break
 
                 if ad == True:
-                    continue
+                    break
 
             # Get article description
             if(child.tag == 'description'):
                 description = child.text
 
+                if description is None:
+                    print(bcolors.WARNING + "Warning: No description found for url {}".format(articleUrl) + bcolors.ENDC, file=sys.stderr)
+
                 # Sometimes there are HTML elements in the description which we need to get rid of
                 try:
-                    description = removeHTML(description)
+                    if description is not None:
+                        description = removeHTML(description)
                 except Exception as e:
                     print(bcolors.WARNING + "Error removing HTML from description: " + str(e) + bcolors.ENDC, file=sys.stderr)
                     pass
@@ -176,19 +205,13 @@ def parseFeed(feed):
                 except:
                     pass
 
-            # Get article title
-            if(child.tag == 'title'):
-                title = child.text
-
-                # Sometimes there is no title provided (e.g. some slideshow "articles" for nbcnews), so we must encase stripping in try-except
-                try:
-                    title = title.strip()
-                except:
-                    pass
-
             # Get article publish date
             if (child.tag == 'pubDate'):
-                pub_date = child.text.strip()
+                # Wrap strip() in try-except in case pubDate field is empty
+                try:
+                    pub_date = child.text.strip()
+                except:
+                    pass
 
         if (ad == False and error_encountered == False):
             article_entry = { 'domain': domain, 'title': title, 'description': description, 'thumbnail_url':'', 'pub_date':pub_date, 'article_url': articleUrl, 'amp_url':'', 'summary':'', 'url_hash': urlHash }
@@ -263,9 +286,6 @@ def main():
 
                 if (found_entry == True):
                     break
-
-    print("waiting 20 sec...", file=sys.stderr)
-    time.sleep(20)
 
     htmlParseCodeCount = {}
     databaseCodeCount = {}

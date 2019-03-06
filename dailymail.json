@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "dailymail",
+			"rss_url": "https://www.dailymail.co.uk/news/index.rss",
+			"bad_paths": []
+		}
+	]
+}

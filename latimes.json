@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "latimes",
+			"rss_url": "https://www.latimes.com/rss2.0.xml",
+			"bad_paths": []
+		}
+	]
+}

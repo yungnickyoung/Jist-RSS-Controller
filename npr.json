@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "npr",
+			"rss_url": "https://www.npr.org/rss/rss.php",
+			"bad_paths": []
+		}
+	]
+}

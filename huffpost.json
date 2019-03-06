@@ -1,0 +1,9 @@
+{
+	"top_stories": [
+		{
+			"domain": "huffpost",
+			"rss_url": "https://www.huffingtonpost.com/section/front-page/feed",
+			"bad_paths": []
+		}
+	]
+}
