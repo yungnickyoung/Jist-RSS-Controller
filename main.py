@@ -131,8 +131,8 @@ def parseFeed(feed):
                     print(domainStr + " Hash " + str(urlHash) + " already exists, skipping article...", file=sys.stderr)
                     error_encountered = True
                     break
-                elif resp.status_code == 404:
-                    print(domainStr + " Hash does not yet exist, proceeding with article...", file=sys.stderr)
+                elif resp.status_code == 404 or resp.status_code == 500:
+                    print(domainStr + " Database returned {0}: {1} - Proceeding with article...".format(resp.status_code, resp.text), file=sys.stderr)
                 else:
                     print(bcolors.WARNING + domainStr + " Received abnormal error code ({0}) when sending request to /articleExists with hash {1}\nSkipping article...".format(resp.status_code, urlHash + bcolors.ENDC), file=sys.stderr)
 
@@ -214,13 +214,15 @@ def parseFeed(feed):
                     pass
 
         if (ad == False and error_encountered == False):
-            article_entry = { 'domain': domain, 'title': title, 'description': description, 'thumbnail_url':'', 'pub_date':pub_date, 'article_url': articleUrl, 'amp_url':'', 'summary':'', 'url_hash': urlHash }
+            article_entry = { 'domain': domain, 'title': title, 'description': description, 'thumbnail_url':'', 'pub_date':pub_date, 'article_url': articleUrl, 'amp_url':'', 'summary':'', 'url_hash': urlHash, 'article_hash':'' }
             article_list.append(article_entry)
 
     return article_list
 
 
 def main():
+    startTime = time.time()
+
     try:
         rssFeedList = getRSSFeedListFromJSONFile()
     except FileNotFoundError as fnferr:
@@ -288,15 +290,18 @@ def main():
                     break
 
     htmlParseCodeCount = {}
+    summarizeCodeCount = {}
     databaseCodeCount = {}
+
 
     for smallList in bigList:
         for item in smallList:
-            # Send POST for getting summary for article
+            print(bcolors.HEADER + "({}) ".format(item['domain']) + item['title'] + bcolors.ENDC, file=sys.stderr)
+
+            # Send POST for getting article text
             resp = requests.post(url='http://jist-html-parser:5001/parse', json=item)
 
-            # Print title, domain, and HTTP response code
-            print(bcolors.HEADER + "({}) ".format(item['domain']) + item['title'] + bcolors.ENDC, file=sys.stderr)
+            # Print HTML Parser response code
             if resp.status_code == 200:
                 print(bcolors.BLUE + "    HTML Parser response: {}".format(resp.status_code) + bcolors.ENDC, file=sys.stderr)
             else:
@@ -308,13 +313,37 @@ def main():
             except:
                 htmlParseCodeCount[resp.status_code] = 1
 
-            # Get summary. Ignore/don't save articles which did not successfully return a summary from HTML Parser
+            # Extract article text and hash from response; discard article if it returned an error
+            try:
+                articleText = resp.json()['article_text']
+                articleHash = resp.json()['article_hash']
+            except json.decoder.JSONDecodeError as jde_err:
+                print(bcolors.WARNING + "    Failed to parse article. Moving on to next item..." + bcolors.ENDC)
+                continue
+
+            # Send POST for getting article summary
+            resp = requests.post(url='http://jist-summarizer:5002/summarize', json={ 'article_text': articleText })
+
+            # Print summarize response code
+            if resp.status_code == 200:
+                print(bcolors.BLUE + "    Summarizer response: {}".format(resp.status_code) + bcolors.ENDC, file=sys.stderr)
+            else:
+                print(bcolors.WARNING + "    Summarizer response: {0}: {1}".format(resp.status_code, resp.text) + bcolors.ENDC, file=sys.stderr)
+
+            # Keep track of response code count for displaying at the end
+            try:
+                summarizeCodeCount[resp.status_code] += 1
+            except:
+                summarizeCodeCount[resp.status_code] = 1
+
+            # Extract summary from response; discard article if it returned an error
             try:
                 summary = resp.json()['summary']
-            except json.decoder.JSONDecodeError as jde_error:
+            except json.decoder.JSONDecodeError as jde_err:
                 print(bcolors.WARNING + "    Failed to get summary. Moving on to next item..." + bcolors.ENDC)
                 continue
 
+            item['article_hash'] = articleHash
             item['summary'] = summary
             print("    " + str(summary), file=sys.stderr)
 
@@ -336,9 +365,12 @@ def main():
             except:
                 databaseCodeCount[resp.status_code] = 1
 
-    print("\n")
-    print(bcolors.GREEN + "HTML Parser responses: {}".format(str(htmlParseCodeCount)) + bcolors.ENDC, file=sys.stderr)
+    print("\n" + bcolors.GREEN + "HTML Parser responses: {}".format(str(htmlParseCodeCount)) + bcolors.ENDC, file=sys.stderr)
+    print(bcolors.GREEN + "Summarizer responses: {}".format(str(summarizeCodeCount)) + bcolors.ENDC, file=sys.stderr)
     print(bcolors.GREEN + "Database responses: {}".format(str(databaseCodeCount)) + bcolors.ENDC, file=sys.stderr)
+
+    endTime = time.time()
+    print("\n" + bcolors.BLUE + "Elapsed time: " + str(int((endTime - startTime) / 60)) + " min " + str(int((endTime - startTime) % 60)) + " sec" + bcolors.ENDC, file=sys.stderr)
     sys.stderr.flush()
 
 def removeHTML(rawHTML):
