@@ -121,7 +121,7 @@ def parseFeed(feed):
                 urlHash = hashlib.md5(articleUrl.encode()).hexdigest()
                 try:
                     print(domainStr + " Checking hash of " + articleUrl + " (" + urlHash + ")", file=sys.stderr)
-                    resp = requests.get(url="http://jist-database-api:5003/articleExists", params={"url_hash": urlHash})
+                    resp = requests.get(url="http://jist-database-api:5003/articles", params={"url_hash": urlHash})
                 except Exception as e:
                     print(bcolors.WARNING + domainStr + " WARNING: An error occured while checking hash: " + str(e) + bcolors.ENDC, file=sys.stderr)
                     error_encountered = True
@@ -348,7 +348,7 @@ def main():
             print("    " + str(summary), file=sys.stderr)
 
             # Save to database
-            resp = requests.post(url='http://jist-database-api:5003/postArticle', json=item)
+            resp = requests.post(url='http://jist-database-api:5003/articles', json=item)
 
             if resp.status_code == 201:
                 print(bcolors.GREEN + "    Database response: 201 (Success)" + bcolors.ENDC, file=sys.stderr)
