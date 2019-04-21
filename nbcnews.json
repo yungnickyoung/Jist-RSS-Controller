@@ -3,7 +3,11 @@
 		{
 			"domain": "nbcnews",
 			"rss_url": "http://feeds.nbcnews.com/nbcnews/public/news",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

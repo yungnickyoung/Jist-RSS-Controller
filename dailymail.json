@@ -3,7 +3,11 @@
 		{
 			"domain": "dailymail",
 			"rss_url": "https://www.dailymail.co.uk/news/index.rss",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "https://search.yahoo.com/mrss/",
+				"path": ["thumbnail"]
+			}
 		}
 	]
 }

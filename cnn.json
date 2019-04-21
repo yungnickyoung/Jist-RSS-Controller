@@ -3,7 +3,11 @@
 		{
 			"domain": "cnn",
 			"rss_url": "http://rss.cnn.com/rss/cnn_topstories.rss",
-			"bad_paths": ["/gallery/", "/video/", "/videos/"]
+			"bad_paths": ["/gallery/", "/video/", "/videos/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["group", "content"]
+			}
 		}
 	]
 }

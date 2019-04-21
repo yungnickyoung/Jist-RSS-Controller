@@ -3,7 +3,11 @@
 		{
 			"domain": "politico",
 			"rss_url": "https://www.politico.com/rss/politicopicks.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		}
 	]
 }

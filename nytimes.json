@@ -3,7 +3,11 @@
 		{
 			"domain": "nytimes",
 			"rss_url": "http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

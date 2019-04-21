@@ -3,7 +3,11 @@
 		{
 			"domain": "yahoo",
 			"rss_url": "https://yahoo.com/news/rss",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

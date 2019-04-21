@@ -3,7 +3,11 @@
 		{
 			"domain": "abcnews",
 			"rss_url": "https://abcnews.go.com/abcnews/topstories",
-			"bad_paths": ["/video/", "/Live/", "/wireStory/"]
+			"bad_paths": ["/video/", "/Live/", "/wireStory/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["thumbnail"]
+			}
 		}
 	]
 }

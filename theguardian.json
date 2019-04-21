@@ -3,7 +3,11 @@
 		{
 			"domain": "theguardian",
 			"rss_url": "https://www.theguardian.com/world/rss",
-			"bad_paths": ["/video/", "/gallery/", "/live/"]
+			"bad_paths": ["/video/", "/gallery/", "/live/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

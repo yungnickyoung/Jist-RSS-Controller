@@ -3,77 +3,137 @@
 		{
 			"domain": "cnn",
 			"rss_url": "http://rss.cnn.com/rss/cnn_topstories.rss",
-			"bad_paths": ["/gallery/", "/video/", "/videos/"]
+			"bad_paths": ["/gallery/", "/video/", "/videos/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["group", "content"]
+			}
 		},
 		{
 			"domain": "nytimes",
 			"rss_url": "http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		},
 		{
 			"domain": "huffpost",
 			"rss_url": "https://www.huffingtonpost.com/section/front-page/feed",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		},
 		{
 			"domain": "foxnews",
 			"rss_url": "http://feeds.foxnews.com/foxnews/most-popular",
-			"bad_paths": ["video.foxnews"]
+			"bad_paths": ["video.foxnews"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["group", "content"]
+			}
 		},
 		{
 			"domain": "usatoday",
 			"rss_url": "http://rssfeeds.usatoday.com/usatoday-newstopstories&x=1",
-			"bad_paths": ["picture-gallery"]
+			"bad_paths": ["picture-gallery"],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ["enclosure"]
+			}
 		},
 		{
 			"domain": "reuters",
 			"rss_url": "http://feeds.reuters.com/reuters/topNews",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		},
 		{
 			"domain": "politico",
 			"rss_url": "https://www.politico.com/rss/politicopicks.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		},
 		{
 			"domain": "yahoo",
 			"rss_url": "https://yahoo.com/news/rss",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		},
 		{
 			"domain": "npr",
 			"rss_url": "https://www.npr.org/rss/rss.php",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		},
 		{
 			"domain": "nbcnews",
 			"rss_url": "http://feeds.nbcnews.com/nbcnews/public/news",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		},
 		{
 			"domain": "dailymail",
 			"rss_url": "https://www.dailymail.co.uk/news/index.rss",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "https://search.yahoo.com/mrss/",
+				"path": ["thumbnail"]
+			}
 		},
 		{
 			"domain": "theguardian",
 			"rss_url": "https://www.theguardian.com/world/rss",
-			"bad_paths": ["/video/", "/gallery/", "/live/"]
+			"bad_paths": ["/video/", "/gallery/", "/live/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		},
 		{
 			"domain": "abcnews",
 			"rss_url": "https://abcnews.go.com/abcnews/topstories",
-			"bad_paths": ["/video/", "/Live/", "/wireStory/"]
+			"bad_paths": ["/video/", "/Live/", "/wireStory/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["thumbnail"]
+			}
 		},
 		{
 			"domain": "bbc",
 			"rss_url": "http://feeds.bbci.co.uk/news/rss.xml",
-			"bad_paths": ["/av/"]
+			"bad_paths": ["/av/"],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["thumbnail"]
+			}
 		},
 		{
 			"domain": "latimes",
 			"rss_url": "https://www.latimes.com/rss2.0.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

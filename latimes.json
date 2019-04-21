@@ -3,7 +3,11 @@
 		{
 			"domain": "latimes",
 			"rss_url": "https://www.latimes.com/rss2.0.xml",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "http://search.yahoo.com/mrss/",
+				"path": ["content"]
+			}
 		}
 	]
 }

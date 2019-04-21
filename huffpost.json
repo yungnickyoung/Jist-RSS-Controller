@@ -3,7 +3,11 @@
 		{
 			"domain": "huffpost",
 			"rss_url": "https://www.huffingtonpost.com/section/front-page/feed",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		}
 	]
 }

@@ -91,10 +91,16 @@ def parseFeed(feed):
             attempts -= 1
             continue
 
+    thumbnail_prefix = "" # prefix is used for namespaces, which many thumbnail url XML elements have
+    if feed['thumbnail']['prefix_uri'] != "":
+        thumbnail_prefix = "{" + feed['thumbnail']['prefix_uri'] + "}"
+
     article_list = []
     for item in tree.findall('./channel/item'):
         ad = False # Do not keep any items labeled as ads
         error_encountered = False # Only keep items which do not encounter errors during this process
+
+        thumbnail_url = ""
 
         for child in item:
             # Get article title
@@ -157,6 +163,9 @@ def parseFeed(feed):
                     attempts -= 1
                     time.sleep(2)
                     continue
+                except requests.exceptions.MissingSchema as err:
+                    error_encountered = True
+                    break
 
                 # Discard ads/articles not hosted on the domain
                 ext = tldextract.extract(articleUrl)
@@ -213,8 +222,17 @@ def parseFeed(feed):
                 except:
                     pass
 
+            # Get thumbnail image URL. The method for this depends on thumbnail_path in JSON file for given domain
+            if (feed['thumbnail']['path'] != "" and child.tag == thumbnail_prefix + feed['thumbnail']['path'][0]):
+                thumbnail = child
+
+                for i in range(1, len(feed['thumbnail']['path'])):
+                    thumbnail = thumbnail.find(thumbnail_prefix + feed['thumbnail']['path'][i]) # follow the path to get to the image url
+
+                thumbnail_url = thumbnail.attrib['url']
+
         if (ad == False and error_encountered == False):
-            article_entry = { 'domain': domain, 'title': title, 'description': description, 'thumbnail_url':'', 'pub_date':pub_date, 'article_url': articleUrl, 'amp_url':'', 'summary':'', 'url_hash': urlHash, 'article_hash':'' }
+            article_entry = { 'domain': domain, 'title': title, 'description': description, 'thumbnail_url':thumbnail_url, 'pub_date':pub_date, 'article_url': articleUrl, 'amp_url':'', 'summary':'', 'url_hash': urlHash, 'article_hash':'' }
             article_list.append(article_entry)
 
     return article_list

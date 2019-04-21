@@ -3,7 +3,11 @@
 		{
 			"domain": "npr",
 			"rss_url": "https://www.npr.org/rss/rss.php",
-			"bad_paths": []
+			"bad_paths": [],
+			"thumbnail": {
+				"prefix_uri": "",
+				"path": ""
+			}
 		}
 	]
 }
