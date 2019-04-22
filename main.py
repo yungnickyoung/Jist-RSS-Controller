@@ -101,6 +101,7 @@ def parseFeed(feed):
         error_encountered = False # Only keep items which do not encounter errors during this process
 
         thumbnail_url = ""
+        pub_date = ""
 
         for child in item:
             # Get article title
